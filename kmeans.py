@@ -180,11 +180,13 @@ def update_centroids(assignment_dict):
            'centroid2': [4.0, 3.14, 2.0, 1.0]}
     """
 
-    updated_centroids = {}
+    new_centroids_dict = {}
     for centroid, points in assignment_dict.items():
-        if len(points) > 0:
-            updated_centroids[centroid] = mean_of_points(points)
-    return updated_centroids
+        if not points:
+            continue
+        mean_point = mean_of_points(points)
+        new_centroids_dict[centroid] = mean_point
+    return new_centroids_dict
 
 
 # ----------------------------------------------------------
