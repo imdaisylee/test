@@ -7,13 +7,68 @@
 * Collaboration:
 """
 
+import math
 from kmeans import get_closest_centroid
 from utils import load_centroids, read_data, assert_equals
 
 
 # ----------------------------------------------------------
 # PROBLEMS FOR STUDENTS
+def euclidean_distance(point1, point2):
+    """Calculate the Euclidean distance between two data points.
 
+    Arguments:
+        point1: a non-empty list of floats representing a data point
+        point2: a non-empty list of floats representing a data point
+
+    Returns: the Euclidean distance between two data points
+
+    Example:
+        Code:
+            point1 = [1.1, 1, 1, 0.5]
+            point2 = [4, 3.14, 2, 1]
+            print(euclidean_distance(point1, point2))
+        Output:
+            3.7735394525564456
+    """
+
+    distance = 0
+    for i in range(len(point1)):
+        distance += (point1[i] - point2[i])**2
+    return math.sqrt(distance)
+
+
+# problem for students
+def get_closest_centroid(point, centroids_dict):
+    """Given a datapoint, finds the closest centroid. You should use
+    the euclidean_distance function (that you previously implemented).
+
+    Arguments:
+        point: a list of floats representing a data point
+        centroids_dict: a dictionary representing the centroids where the keys
+                        are strings (centroid names) and the values are lists
+                        of centroid locations
+
+    Returns: a string as the key name of the closest centroid to the data point
+
+    Example:
+        Code:
+            point = [0, 0, 0, 0]
+            centroids_dict = {"centroid1": [1, 1, 1, 1],
+                            "centroid2": [2, 2, 2, 2]}
+            print(get_closest_centroid(point, centroids_dict))
+        Output:
+            centroid1
+    """
+
+    closest_centroid = None
+    closest_distance = float('inf')
+    for centroid_name, centroid_location in centroids_dict.items():
+        distance = euclidean_distance(point, centroid_location)
+        if distance < closest_distance:
+            closest_distance = distance
+            closest_centroid = centroid_name
+    return closest_centroid
 
 def update_assignment(list_of_points, labels, centroids_dict):
     """Assign all data points to the closest centroids and keep track of their
@@ -42,7 +97,27 @@ def update_assignment(list_of_points, labels, centroids_dict):
             {'centroid1': [2, 3], 'centroid2': [1]}
     """
 
-    # REMOVE THIS COMMENT AND REPLACE IT WITH YOUR CODE ...
+     # create a dictionary to store the assignments
+    assignments = {key: [] for key in centroids_dict.keys()}
+
+    # iterate over each point and assign it to the closest centroid
+    for i, point in enumerate(list_of_points):
+        # find the closest centroid to the point
+        min_distance = float('inf')
+        closest_centroid = None
+        for centroid, centroid_point in centroids_dict.items():
+            d = euclidean_distance(point, centroid_point)
+            if d < min_distance:
+                min_distance = d
+                closest_centroid = centroid
+
+        # assign the point to the closest centroid
+        assignments[closest_centroid].append(labels[i])
+
+    # remove any empty lists
+    assignments = {k: v for k, v in assignments.items() if v}
+
+    return assignments
 
 
 def majority_count(labels):
@@ -61,7 +136,11 @@ def majority_count(labels):
             6
     """
 
-    # REMOVE THIS COMMENT AND REPLACE IT WITH YOUR CODE ...
+    count_dict = {}
+    for label in labels:
+        count_dict[label] = count_dict.get(label, 0) + 1
+    return max(count_dict.values())
+
 
 
 def accuracy(list_of_points, labels, centroids_dict):
@@ -88,8 +167,6 @@ def accuracy(list_of_points, labels, centroids_dict):
         Output:
             0.6666666666666666
     """
-
-    # REMOVE THIS COMMENT AND REPLACE IT WITH YOUR CODE ...
 
 
 # ----------------------------------------------------------
@@ -242,17 +319,22 @@ def main_test():
 
 
 if __name__ == "__main__":
-    centroids = load_centroids("mnist_final_centroids.csv")
+    # centroids = load_centroids("mnist_final_centroids.csv")
     # Consider exploring the centroids data here
 
     # Uncomment the line below for Part 2 Step 2, 3, and 4:
-    # main_test()
+    main_test()
 
     # data, label = read_data("data/mnist.csv")
     # print(accuracy(data, label, centroids))
 
 # 1. What happened to the centroids? Why are there fewer than 10?
 # Answer:
+# Some of the initial centroids may have ended up being too close
+# to each other, causing some of them to merge as the algorithm progresses.
+# As they merge centroids start become one resulting in fewer centroids
+# in the end.
+
 #
 # 2. What's the accuracy of the algorithm on MNIST? By looking at the
 # centroids, which digits are easier to be distinguished by the algorithm,
